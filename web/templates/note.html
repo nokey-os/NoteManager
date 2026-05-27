@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}{{ note.title }} - NoteMaster{% endblock %}
+
+{% block content %}
+<div class="note-detail">
+    <div class="note-detail-header">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">← Назад</a>
+        <div class="note-detail-actions">
+            <a href="{{ url_for('edit_note', note_id=note.id) }}" class="btn btn-warning">✏️ Редактировать</a>
+            <button class="btn btn-danger" onclick="confirmDelete('{{ note.id }}')">🗑️ Удалить</button>
+        </div>
+    </div>
+    
+    <div class="note-detail-card">
+        <h1 class="note-detail-title">{{ note.title }}</h1>
+        
+        <div class="note-detail-meta">
+            <span class="meta-item">📅 {{ note.timestamp[:19] }}</span>
+            <span class="meta-item">🆔 {{ note.id[:8] }}...</span>
+        </div>
+        
+        <div class="note-detail-content">
+            {% if note.content %}
+                <p>{{ note.content }}</p>
+            {% else %}
+                <p class="empty-content">Содержимое отсутствует</p>
+            {% endif %}
+        </div>
+        
+        {% if note.attachments %}
+            <div class="note-detail-attachments">
+                <h4>Вложения</h4>
+                <ul class="attachment-list">
+                    {% for att in attachments_with_status %}
+                        <li class="attachment-item">
+                            {% if att.exists %}
+                                <a href="{{ url_for('uploaded_file', filename=att.name) }}" 
+                                   target="_blank" 
+                                   class="attachment-link">
+                                    <span class="attachment-icon">{{ att.icon }}</span>
+                                    <span class="attachment-name">{{ att.name }}</span>
+                                    <span class="attachment-arrow">↗</span>
+                                </a>
+                            {% else %}
+                                <div class="attachment-link attachment-link-missing">
+                                    <span class="attachment-icon">⚠️</span>
+                                    <span class="attachment-name">{{ att.name }}</span>
+                                    <span class="attachment-missing-text">(файл не найден)</span>
+                                </div>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div id="delete-modal" class="modal hidden">
+    <div class="modal-content">
+        <h3>Подтверждение удаления</h3>
+        <p>Вы уверены, что хотите удалить эту заметку? Это действие нельзя отменить.</p>
+        <form id="delete-form" method="POST" action="{{ url_for('delete_note', note_id=note.id) }}">
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Отмена</button>
+                <button type="submit" class="btn btn-danger">Удалить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function confirmDelete(noteId) {
+    document.getElementById('delete-modal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+    document.getElementById('delete-modal').classList.add('hidden');
+}
+
+document.getElementById('delete-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+</script>
+{% endblock %}

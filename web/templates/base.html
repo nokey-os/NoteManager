@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NoteMaster{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="background">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+        <div class="circle circle-3"></div>
+        <div class="circle circle-4"></div>
+    </div>
+    
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">🍊 NoteMaster</h1>
+            <nav class="nav">
+                <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Заметки</a>
+                <a href="{{ url_for('add_page') }}" class="nav-link {% if request.endpoint == 'add_page' %}active{% endif %}">Добавить</a>
+            </nav>
+        </header>
+        
+        <main class="main">
+            {% block content %}{% endblock %}
+        </main>
+        
+        <footer class="footer">
+            <p>&copy; 2026 NoteMaster. Все заметки в одном месте.</p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/background.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

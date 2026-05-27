@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Заметки - NoteMaster{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Мои заметки</h2>
+    <a href="{{ url_for('add_page') }}" class="btn btn-primary">
+        <span class="btn-icon">+</span> Новая заметка
+    </a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">
+                    <span class="flash-icon">{% if category == 'success' %}✓{% elif category == 'error' %}✕{% endif %}</span>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+{% if notes %}
+    <div class="notes-grid">
+        {% for note in notes %}
+            <div class="note-card" data-note-id="{{ note.id }}">
+                <div class="note-card-header">
+                    <h3 class="note-title">{{ note.title[:50] }}{% if note.title|length > 50 %}...{% endif %}</h3>
+                    <span class="note-number">#{{ loop.index }}</span>
+                </div>
+                <div class="note-card-body">
+                    <p class="note-content">{{ note.content[:100] }}{% if note.content|length > 100 %}...{% endif %}</p>
+                    {% if note.attachments %}
+                        <div class="note-attachments">
+                            <span class="attachment-icon">📎</span>
+                            <span class="attachment-count">{{ note.attachments|length }} вложение{% if note.attachments|length != 1 %}а{% endif %}</span>
+                            <div class="attachment-preview-list">
+                                {% for attachment in note.attachments[:3] %}
+                                    <span class="attachment-badge">{{ attachment }}</span>
+                                {% endfor %}
+                                {% if note.attachments|length > 3 %}
+                                    <span class="attachment-badge more">+{{ note.attachments|length - 3 }} ещё</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="note-card-footer">
+                    <span class="note-date">{{ note.timestamp[:16] }}</span>
+                    <div class="note-actions">
+                        <a href="{{ url_for('view_note', note_id=note.id) }}" class="btn btn-sm btn-info" title="Открыть">
+                            👁️
+                        </a>
+                        <a href="{{ url_for('edit_note', note_id=note.id) }}" class="btn btn-sm btn-warning" title="Редактировать">
+                            ✏️
+                        </a>
+                        <button class="btn btn-sm btn-danger" onclick="confirmDelete('{{ note.id }}')" title="Удалить">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📝</div>
+        <h3>Заметок пока нет</h3>
+        <p>Создайте свою первую заметку!</p>
+        <a href="{{ url_for('add_page') }}" class="btn btn-primary">Создать заметку</a>
+    </div>
+{% endif %}
+
+<div id="delete-modal" class="modal hidden">
+    <div class="modal-content">
+        <h3>Подтверждение удаления</h3>
+        <p>Вы уверены, что хотите удалить эту заметку? Это действие нельзя отменить.</p>
+        <form id="delete-form" method="POST">
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Отмена</button>
+                <button type="submit" class="btn btn-danger">Удалить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function confirmDelete(noteId) {
+    const modal = document.getElementById('delete-modal');
+    const form = document.getElementById('delete-form');
+    form.action = '/delete/' + noteId;
+    modal.classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+    document.getElementById('delete-modal').classList.add('hidden');
+}
+
+// Закрытие модального окна по клику вне его
+document.getElementById('delete-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+</script>
+{% endblock %}
